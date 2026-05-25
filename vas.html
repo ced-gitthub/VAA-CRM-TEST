@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VA CRM — Virtual Assistants</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app-layout">
+  <div class="topbar">
+    <div class="topbar-logo">VA<span>CRM</span></div>
+    <button class="menu-toggle" id="menu-toggle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">VA<span>CRM</span></div>
+      <div class="sidebar-tagline">Agency Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="clients.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients
+      </a>
+      <a href="vas.html" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Virtual Assistants
+      </a>
+      <a href="assignments.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Assignments
+      </a>
+      <div class="nav-section-label">Records</div>
+      <a href="changelog.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Change Log
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-email" id="user-email">Loading…</div>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Virtual Assistants</div>
+        <div class="page-subtitle">Your team roster and availability</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">+ Add VA</button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">All VAs</div>
+        <div class="table-actions">
+          <input type="text" class="search-input" id="search" placeholder="Search VAs…" oninput="filterTable()">
+          <select class="search-input" id="filter-avail" onchange="filterTable()" style="width:auto">
+            <option value="">All availability</option>
+            <option value="available">Available</option>
+            <option value="partial">Partial</option>
+            <option value="full">Full</option>
+          </select>
+        </div>
+      </div>
+      <div id="table-body">
+        <div class="empty-state"><div class="empty-state-icon">⏳</div>Loading…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add VA</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="f-name" placeholder="Maria Santos">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="f-email" placeholder="va@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Availability</label>
+        <select id="f-avail">
+          <option value="available">Available — can take new clients</option>
+          <option value="partial">Partial — limited capacity</option>
+          <option value="full">Full — no capacity</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Skills <span style="color:var(--text-3);font-weight:400">(comma-separated)</span></label>
+        <input type="text" id="f-skills" placeholder="Email management, Social media, Data entry, Customer support">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Timezone, working hours, specialties…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveVA()">Save VA</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let allVAs = [];
+
+const availBadge = a => ({
+  available: '<span class="badge badge-green">Available</span>',
+  partial:   '<span class="badge badge-yellow">Partial</span>',
+  full:      '<span class="badge badge-red">Full</span>',
+}[a] || a);
+
+async function loadVAs() {
+  const { data, error } = await sb.from('vas').select('*').order('name');
+  if (error) { toast('Error loading VAs', 'error'); return; }
+  allVAs = data || [];
+
+  // Also get active assignment counts per VA
+  const { data: assignments } = await sb.from('assignments').select('va_id').eq('status', 'active');
+  const counts = {};
+  (assignments || []).forEach(a => { counts[a.va_id] = (counts[a.va_id] || 0) + 1; });
+
+  renderTable(allVAs, counts);
+}
+
+function renderTable(data, counts = {}) {
+  const el = document.getElementById('table-body');
+  if (!data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👤</div>No VAs yet. Add your first one.</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Name</th>
+      <th class="hide-mobile">Email</th>
+      <th>Availability</th>
+      <th class="hide-mobile">Clients</th>
+      <th class="hide-mobile">Skills</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      ${data.map(v => `<tr>
+        <td><strong>${esc(v.name)}</strong></td>
+        <td class="hide-mobile td-secondary">${esc(v.email || '—')}</td>
+        <td>${availBadge(v.availability)}</td>
+        <td class="hide-mobile">${counts[v.id] || 0} active</td>
+        <td class="hide-mobile">${v.skills?.length ? `<div class="skills-list">${v.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join('')}</div>` : '<span class="td-secondary">—</span>'}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editVA('${v.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteVA('${v.id}', '${esc(v.name)}')">Delete</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function filterTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const a = document.getElementById('filter-avail').value;
+  renderTable(allVAs.filter(v =>
+    (!q || v.name?.toLowerCase().includes(q) || v.email?.toLowerCase().includes(q) || v.skills?.some(s => s.toLowerCase().includes(q))) &&
+    (!a || v.availability === a)
+  ));
+}
+
+function openModal(va = null) {
+  document.getElementById('modal-title').textContent = va ? 'Edit VA' : 'Add VA';
+  document.getElementById('edit-id').value = va?.id || '';
+  document.getElementById('f-name').value = va?.name || '';
+  document.getElementById('f-email').value = va?.email || '';
+  document.getElementById('f-avail').value = va?.availability || 'available';
+  document.getElementById('f-skills').value = va?.skills?.join(', ') || '';
+  document.getElementById('f-notes').value = va?.notes || '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function editVA(id) {
+  const v = allVAs.find(x => x.id === id);
+  if (v) openModal(v);
+}
+
+async function saveVA() {
+  const id = document.getElementById('edit-id').value;
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Name is required', 'error'); return; }
+
+  const rawSkills = document.getElementById('f-skills').value;
+  const skills = rawSkills.split(',').map(s => s.trim()).filter(Boolean);
+
+  const payload = {
+    name,
+    email: document.getElementById('f-email').value.trim() || null,
+    availability: document.getElementById('f-avail').value,
+    skills: skills.length ? skills : null,
+    notes: document.getElementById('f-notes').value.trim() || null,
+  };
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+
+  if (id) {
+    const old = allVAs.find(x => x.id === id);
+    const { error } = await sb.from('vas').update(payload).eq('id', id);
+    if (error) { toast('Error: ' + error.message, 'error'); btn.disabled = false; return; }
+    if (old && old.availability !== payload.availability) {
+      await logChange('vas', id, 'availability', old.availability, payload.availability);
+    }
+    toast('VA updated', 'success');
+  } else {
+    const { data, error } = await sb.from('vas').insert(payload).select().single();
+    if (error) { toast('Error: ' + error.message, 'error'); btn.disabled = false; return; }
+    await logChange('vas', data.id, 'created', null, name);
+    toast('VA added', 'success');
+  }
+
+  btn.disabled = false;
+  closeModal();
+  loadVAs();
+}
+
+async function deleteVA(id, name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  const { error } = await sb.from('vas').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('VA deleted', 'success');
+  loadVAs();
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+loadVAs();
+</script>
+</body>
+</html>
