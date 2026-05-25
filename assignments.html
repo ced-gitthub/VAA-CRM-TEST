@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VA CRM — Assignments</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app-layout">
+  <div class="topbar">
+    <div class="topbar-logo">VA<span>CRM</span></div>
+    <button class="menu-toggle" id="menu-toggle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">VA<span>CRM</span></div>
+      <div class="sidebar-tagline">Agency Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="clients.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients
+      </a>
+      <a href="vas.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Virtual Assistants
+      </a>
+      <a href="assignments.html" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Assignments
+      </a>
+      <div class="nav-section-label">Records</div>
+      <a href="changelog.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Change Log
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-email" id="user-email">Loading…</div>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Assignments</div>
+        <div class="page-subtitle">Client–VA pairings and hours</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">+ New Assignment</button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">All Assignments</div>
+        <div class="table-actions">
+          <input type="text" class="search-input" id="search" placeholder="Search…" oninput="filterTable()">
+          <select class="search-input" id="filter-status" onchange="filterTable()" style="width:auto">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="ended">Ended</option>
+          </select>
+        </div>
+      </div>
+      <div id="table-body">
+        <div class="empty-state"><div class="empty-state-icon">⏳</div>Loading…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">New Assignment</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Client *</label>
+          <select id="f-client"><option value="">Select client…</option></select>
+        </div>
+        <div class="form-group">
+          <label>VA *</label>
+          <select id="f-va"><option value="">Select VA…</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date *</label>
+          <input type="date" id="f-start">
+        </div>
+        <div class="form-group">
+          <label>End Date <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+          <input type="date" id="f-end">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hours / Week *</label>
+          <input type="number" id="f-hours" placeholder="20" min="1" max="168" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="active">Active</option>
+            <option value="ended">Ended</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tasks / Scope of Work</label>
+        <textarea id="f-tasks" placeholder="Email management, scheduling, customer support…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveAssignment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script>
+let allAssignments = [];
+
+const statusBadge = s => s === 'active'
+  ? '<span class="badge badge-green">Active</span>'
+  : '<span class="badge badge-gray">Ended</span>';
+
+async function loadAssignments() {
+  const [{ data: assignments }, { data: clients }, { data: vas }] = await Promise.all([
+    sb.from('assignments').select('*, clients(company_name), vas(name)').order('created_at', { ascending: false }),
+    sb.from('clients').select('id, company_name').eq('status', 'active').order('company_name'),
+    sb.from('vas').select('id, name').order('name'),
+  ]);
+
+  allAssignments = assignments || [];
+
+  // Populate dropdowns
+  const cSel = document.getElementById('f-client');
+  const vSel = document.getElementById('f-va');
+  cSel.innerHTML = '<option value="">Select client…</option>' +
+    (clients || []).map(c => `<option value="${c.id}">${esc(c.company_name)}</option>`).join('');
+  vSel.innerHTML = '<option value="">Select VA…</option>' +
+    (vas || []).map(v => `<option value="${v.id}">${esc(v.name)}</option>`).join('');
+
+  renderTable(allAssignments);
+}
+
+function renderTable(data) {
+  const el = document.getElementById('table-body');
+  if (!data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔗</div>No assignments yet.</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Client</th>
+      <th>VA</th>
+      <th>Hours/Wk</th>
+      <th class="hide-mobile">Start</th>
+      <th>Status</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      ${data.map(a => `<tr>
+        <td><strong>${esc(a.clients?.company_name ?? '—')}</strong></td>
+        <td>${esc(a.vas?.name ?? '—')}</td>
+        <td>${a.hours_per_week} hrs</td>
+        <td class="hide-mobile td-secondary">${a.start_date ?? '—'}</td>
+        <td>${statusBadge(a.status)}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editAssignment('${a.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteAssignment('${a.id}')">Delete</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function filterTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  renderTable(allAssignments.filter(a =>
+    (!q || a.clients?.company_name?.toLowerCase().includes(q) || a.vas?.name?.toLowerCase().includes(q)) &&
+    (!s || a.status === s)
+  ));
+}
+
+function openModal(a = null) {
+  document.getElementById('modal-title').textContent = a ? 'Edit Assignment' : 'New Assignment';
+  document.getElementById('edit-id').value = a?.id || '';
+  document.getElementById('f-client').value = a?.client_id || '';
+  document.getElementById('f-va').value = a?.va_id || '';
+  document.getElementById('f-start').value = a?.start_date || '';
+  document.getElementById('f-end').value = a?.end_date || '';
+  document.getElementById('f-hours').value = a?.hours_per_week || '';
+  document.getElementById('f-status').value = a?.status || 'active';
+  document.getElementById('f-tasks').value = a?.tasks || '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function editAssignment(id) {
+  const a = allAssignments.find(x => x.id === id);
+  if (a) openModal(a);
+}
+
+async function saveAssignment() {
+  const id = document.getElementById('edit-id').value;
+  const client_id = document.getElementById('f-client').value;
+  const va_id = document.getElementById('f-va').value;
+  const start_date = document.getElementById('f-start').value;
+  const hours_per_week = parseFloat(document.getElementById('f-hours').value);
+
+  if (!client_id || !va_id || !start_date || !hours_per_week) {
+    toast('Client, VA, start date, and hours are required', 'error'); return;
+  }
+
+  const payload = {
+    client_id, va_id, start_date,
+    end_date: document.getElementById('f-end').value || null,
+    hours_per_week,
+    status: document.getElementById('f-status').value,
+    tasks: document.getElementById('f-tasks').value.trim() || null,
+  };
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+
+  if (id) {
+    const old = allAssignments.find(x => x.id === id);
+    const { error } = await sb.from('assignments').update(payload).eq('id', id);
+    if (error) { toast('Error: ' + error.message, 'error'); btn.disabled = false; return; }
+    // Log meaningful changes
+    for (const field of ['hours_per_week', 'status', 'tasks', 'end_date']) {
+      if (old && String(old[field] ?? '') !== String(payload[field] ?? '')) {
+        await logChange('assignments', id, field, old[field], payload[field]);
+      }
+    }
+    toast('Assignment updated', 'success');
+  } else {
+    const { data, error } = await sb.from('assignments').insert(payload).select().single();
+    if (error) { toast('Error: ' + error.message, 'error'); btn.disabled = false; return; }
+    await logChange('assignments', data.id, 'created', null, `${client_id} → ${va_id}`);
+    toast('Assignment created', 'success');
+  }
+
+  btn.disabled = false;
+  closeModal();
+  loadAssignments();
+}
+
+async function deleteAssignment(id) {
+  if (!confirm('Delete this assignment?')) return;
+  const { error } = await sb.from('assignments').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast('Deleted', 'success');
+  loadAssignments();
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+loadAssignments();
+</script>
+</body>
+</html>

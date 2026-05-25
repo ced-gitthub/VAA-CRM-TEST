@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VA CRM — Change Log</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app-layout">
+  <div class="topbar">
+    <div class="topbar-logo">VA<span>CRM</span></div>
+    <button class="menu-toggle" id="menu-toggle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">VA<span>CRM</span></div>
+      <div class="sidebar-tagline">Agency Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="clients.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients
+      </a>
+      <a href="vas.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Virtual Assistants
+      </a>
+      <a href="assignments.html" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Assignments
+      </a>
+      <div class="nav-section-label">Records</div>
+      <a href="changelog.html" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Change Log
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-email" id="user-email">Loading…</div>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Change Log</div>
+        <div class="page-subtitle">Audit trail of all changes</div>
+      </div>
+      <select class="search-input" id="filter-table" onchange="loadLog()" style="width:auto">
+        <option value="">All tables</option>
+        <option value="clients">Clients</option>
+        <option value="vas">VAs</option>
+        <option value="assignments">Assignments</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Activity</div>
+      </div>
+      <div id="log-body">
+        <div class="empty-state"><div class="empty-state-icon">⏳</div>Loading…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script>
+async function loadLog() {
+  const tableFilter = document.getElementById('filter-table').value;
+  let query = sb.from('changelog').select('*').order('changed_at', { ascending: false }).limit(200);
+  if (tableFilter) query = query.eq('table_name', tableFilter);
+
+  const { data, error } = await query;
+  const el = document.getElementById('log-body');
+
+  if (error) { el.innerHTML = '<div class="empty-state">Error loading log.</div>'; return; }
+  if (!data?.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div>No changes recorded yet.</div>';
+    return;
+  }
+
+  const tableLabel = { clients: 'Client', vas: 'VA', assignments: 'Assignment' };
+
+  el.innerHTML = `<div class="changelog-list">
+    ${data.map(entry => {
+      const date = new Date(entry.changed_at);
+      const dateStr = date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+      const timeStr = date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+      const label = tableLabel[entry.table_name] || entry.table_name;
+      const isCreated = entry.field_changed === 'created';
+
+      return `<div class="changelog-item">
+        <div class="changelog-dot" style="background:${isCreated ? 'var(--green)' : 'var(--accent)'}"></div>
+        <div class="changelog-content">
+          <div class="changelog-title">
+            <span class="badge badge-gray" style="margin-right:6px">${label}</span>
+            ${isCreated ? `<strong>${esc(entry.new_value)}</strong> was created` : `<strong>${esc(entry.field_changed)}</strong> changed`}
+          </div>
+          ${!isCreated && (entry.old_value || entry.new_value) ? `
+          <div class="changelog-values">
+            ${entry.old_value ? `<span class="val-old">${esc(entry.old_value)}</span><span class="val-arrow">→</span>` : ''}
+            <span class="val-new">${esc(entry.new_value ?? '—')}</span>
+          </div>` : ''}
+          ${entry.note ? `<div class="td-secondary mt-1">${esc(entry.note)}</div>` : ''}
+          <div class="changelog-meta">${dateStr} at ${timeStr}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadLog();
+</script>
+</body>
+</html>
